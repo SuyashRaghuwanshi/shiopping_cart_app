@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_cart_app/providers/paginationProvider.dart';
 
+import '../models/product.dart';
+
 class ProductGridScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,38 +29,85 @@ class ProductGridScreen extends ConsumerWidget {
                       itemCount: state.products.length,
                       itemBuilder: (context, index) {
                         final product = state.products[index];
-                        return Card(
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Image.network(
-                                  product.thumbnail,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  product.title,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
+                        return ProductCard(product: product);
                       },
                     ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                onPressed: state.currentPage > 0 ? notifier.previousPage : null,
-                child: Text("Previous"),
-              ),
-              Text("Page ${state.currentPage + 1}"),
-              TextButton(onPressed: notifier.nextPage, child: Text("Next")),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed:
+                      state.currentPage > 1 ? notifier.previousPage : null,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                  child: Text(
+                    "Previous",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                Text("Page ${state.currentPage}"),
+                ElevatedButton(
+                  onPressed: state.hasMore ? notifier.nextPage : null,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                  child: Text("Next", style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Product Card Widget
+class ProductCard extends StatelessWidget {
+  final Product product;
+  ProductCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Image.network(
+              product.thumbnail,
+              fit: BoxFit.cover,
+              width: double.infinity,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.title,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "₹${product.price.toStringAsFixed(2)}",
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  "${product.discountPercentage}% OFF",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+                SizedBox(height: 5),
+                ElevatedButton(
+                  onPressed: () {
+                    // Add to cart logic
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                  child: Text("Add"),
+                ),
+              ],
+            ),
           ),
         ],
       ),

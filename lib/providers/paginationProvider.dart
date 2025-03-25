@@ -3,88 +3,108 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-final productPaginationProvider =
-    StateNotifierProvider<ProductPaginationNotifier, ProductPaginationState>(
-      (ref) => ProductPaginationNotifier(),
-    );
+import '../models/product.dart';
 
-class ProductPaginationState {
+class PaginationState {
   final List<Product> products;
-  final int currentPage;
   final bool isLoading;
+  final int currentPage;
+  final bool hasMore;
 
-  ProductPaginationState({
+  PaginationState({
     required this.products,
-    required this.currentPage,
     required this.isLoading,
+    required this.currentPage,
+    required this.hasMore,
   });
 
-  ProductPaginationState copyWith({
+  PaginationState copyWith({
     List<Product>? products,
-    int? currentPage,
     bool? isLoading,
+    int? currentPage,
+    bool? hasMore,
   }) {
-    return ProductPaginationState(
+    return PaginationState(
       products: products ?? this.products,
-      currentPage: currentPage ?? this.currentPage,
       isLoading: isLoading ?? this.isLoading,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
     );
   }
 }
 
-class ProductPaginationNotifier extends StateNotifier<ProductPaginationState> {
-  ProductPaginationNotifier()
-    : super(
-        ProductPaginationState(products: [], currentPage: 0, isLoading: false),
-      );
+class PaginationNotifier extends StateNotifier<PaginationState> {
+  static const String baseUrl = "https://dummyjson.com/products";
+  static const int limit = 10;
 
-  final int _limit = 10;
+  PaginationNotifier()
+    : super(
+        PaginationState(
+          products: [],
+          isLoading: false,
+          currentPage: 1, // ✅ Start from page 1
+          hasMore: true,
+        ),
+      ) {
+    fetchProducts(1);
+  }
 
   Future<void> fetchProducts(int page) async {
+    if (state.isLoading) return;
+
     state = state.copyWith(isLoading: true);
 
-    final url =
-        'https://dummyjson.com/products?limit=$_limit&skip=${page * _limit}';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List<Product> newProducts =
-          (data['products'] as List).map((e) => Product.fromJson(e)).toList();
-
-      state = ProductPaginationState(
-        products: newProducts,
-        currentPage: page,
-        isLoading: false,
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl?limit=$limit&skip=${(page - 1) * limit}"),
       );
-    } else {
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final List<Product> newProducts =
+            (jsonData['products'] as List)
+                .map((e) => Product.fromJson(e))
+                .toList();
+
+        int totalProducts = jsonData['total']; // ✅ Extract total count
+
+        print("Fetched ${newProducts.length} products for page $page");
+
+        state = PaginationState(
+          products: newProducts, // ✅ Replace previous list
+          isLoading: false,
+          currentPage: page,
+          hasMore: (page * limit) < totalProducts, // ✅ Correct check
+        );
+      }
+    } catch (e) {
+      print("Error fetching products: $e");
       state = state.copyWith(isLoading: false);
     }
   }
 
   void nextPage() {
-    fetchProducts(state.currentPage + 1);
+    if (!state.hasMore) {
+      print("No more products to load.");
+      return;
+    }
+
+    int nextPage = state.currentPage + 1;
+    print("Fetching next page: $nextPage"); // Debugging
+    fetchProducts(nextPage);
   }
 
   void previousPage() {
-    if (state.currentPage > 0) {
-      fetchProducts(state.currentPage - 1);
+    if (state.currentPage > 1) {
+      int prevPage = state.currentPage - 1;
+      print("Fetching previous page: $prevPage"); // Debugging
+      fetchProducts(prevPage);
     }
   }
 }
 
-class Product {
-  final int id;
-  final String title;
-  final String thumbnail;
-
-  Product({required this.id, required this.title, required this.thumbnail});
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'],
-      title: json['title'],
-      thumbnail: json['thumbnail'],
+// Riverpod Provider
+final productPaginationProvider =
+    StateNotifierProvider<PaginationNotifier, PaginationState>(
+      (ref) => PaginationNotifier(),
     );
-  }
-}

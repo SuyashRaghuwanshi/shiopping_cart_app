@@ -1,7 +1,7 @@
 import "dart:convert";
 
 import "package:http/http.dart" as http;
-import "package:shopping_cart_app/models/Product.dart";
+import "package:shopping_cart_app/models/product.dart";
 
 class Apiservice {
   static const String url = "https://dummyjson.com/products";
