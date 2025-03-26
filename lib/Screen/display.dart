@@ -24,7 +24,6 @@ class ProductGridScreen extends ConsumerWidget {
                 IconButton(
                   icon: Icon(Icons.shopping_cart),
                   onPressed: () {
-                    // Navigate to cart screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => CartScreen()),
@@ -125,7 +124,7 @@ class ProductGridScreen extends ConsumerWidget {
                                                     (1 -
                                                         (product.discountPercentage /
                                                             100)),
-                                                quantity: 1, // Start with 1
+                                                quantity: 1,
                                                 thumbnail: product.thumbnail,
                                                 review:
                                                     product.reviews.isNotEmpty
@@ -159,6 +158,25 @@ class ProductGridScreen extends ConsumerWidget {
                         );
                       },
                     ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed:
+                      state.currentPage > 1 ? notifier.previousPage : null,
+                  child: Text("Previous"),
+                ),
+                Text("Page ${state.currentPage}"),
+                ElevatedButton(
+                  onPressed: state.hasMore ? notifier.nextPage : null,
+
+                  child: Text("Next"),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -35,7 +35,7 @@ class PaginationState {
 
 class PaginationNotifier extends StateNotifier<PaginationState> {
   static const String baseUrl = "https://dummyjson.com/products";
-  static const int limit = 15;
+  static const int limit = 10;
 
   PaginationNotifier()
     : super(
@@ -48,7 +48,6 @@ class PaginationNotifier extends StateNotifier<PaginationState> {
       ) {
     fetchProducts(1);
   }
-
   Future<void> fetchProducts(int page) async {
     if (state.isLoading) return;
 
@@ -66,16 +65,27 @@ class PaginationNotifier extends StateNotifier<PaginationState> {
                 .map((e) => Product.fromJson(e))
                 .toList();
 
-        int totalProducts = jsonData['total']; // ✅ Extract total count
+        int totalProducts = jsonData['total']; // ✅ Get total count
 
         print("Fetched ${newProducts.length} products for page $page");
+        print(
+          "Existing products count before update: ${state.products.length}",
+        );
 
-        state = PaginationState(
-          products: newProducts, // ✅ Replace previous list
+        state = state.copyWith(
+          products:
+              page == 1
+                  ? newProducts
+                  : [...state.products, ...newProducts], // ✅ Append products
           isLoading: false,
           currentPage: page,
-          hasMore: (page * limit) < totalProducts, // ✅ Correct check
+          hasMore:
+              (page * limit) < totalProducts, // ✅ Ensure correct pagination
         );
+
+        print("Updated products count: ${state.products.length}");
+      } else {
+        print("Error: Status Code ${response.statusCode}");
       }
     } catch (e) {
       print("Error fetching products: $e");
