@@ -1,15 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_cart_app/providers/cartProvider/cartState.dart';
 import 'package:shopping_cart_app/models/cartItem.dart';
-
-class CartState {
-  final List<CartItem> cartItems;
-
-  CartState({required this.cartItems});
-
-  CartState copyWith({List<CartItem>? cartItems}) {
-    return CartState(cartItems: cartItems ?? this.cartItems);
-  }
-}
 
 class CartNotifier extends StateNotifier<CartState> {
   CartNotifier() : super(CartState(cartItems: []));
@@ -57,7 +48,3 @@ class CartNotifier extends StateNotifier<CartState> {
     state = state.copyWith(cartItems: []);
   }
 }
-
-final cartProvider = StateNotifierProvider<CartNotifier, CartState>((ref) {
-  return CartNotifier();
-});

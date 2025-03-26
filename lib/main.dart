@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopping_cart_app/Screen/display.dart';
+import 'package:shopping_cart_app/Screen/screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));

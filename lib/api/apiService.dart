@@ -1,19 +1,26 @@
-// import "dart:convert";
+import "dart:convert";
+import "dart:developer";
 
-// import "package:http/http.dart" as http;
-// import "package:shopping_cart_app/models/product.dart";
+import "package:http/http.dart" as http;
 
-// class Apiservice {
-//   static const String url = "https://dummyjson.com/products";
+class Apiservice {
+  static const String baseUrl = "https://dummyjson.com/products";
+  static const int limit = 10;
 
-//   Future<Product> fetch() async {
-//     final res = await http.get(Uri.parse(url));
-//     if (res.statusCode == 200) {
-//       return Product.fromJson(jsonDecode(res.body));
-//     } else {
-//       throw Exception('Failed to load product');
-//     }
-//   }
-// }
+  Future<dynamic> fetchProducts(int page) async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl?limit=$limit&skip=${(page - 1) * limit}"),
+      );
 
-// api handling is used in pagination provider itself
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        return jsonData;
+      } else {
+        log("Error: Status Code ${response.statusCode}");
+      }
+    } catch (e) {
+      log("Error fetching products: $e");
+    }
+  }
+}
