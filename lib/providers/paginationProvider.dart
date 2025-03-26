@@ -35,7 +35,7 @@ class PaginationState {
 
 class PaginationNotifier extends StateNotifier<PaginationState> {
   static const String baseUrl = "https://dummyjson.com/products";
-  static const int limit = 10;
+  static const int limit = 15;
 
   PaginationNotifier()
     : super(
